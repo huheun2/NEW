@@ -14,6 +14,7 @@ interface StartScreenProps {
   onResetProgress?: () => void;
   userStats: UserStats;
   onOpenSheetModal: () => void;
+  onUpdateUserName: (name: string) => void;
 }
 
 export const StartScreen: React.FC<StartScreenProps> = ({
@@ -25,6 +26,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
   onResetProgress,
   userStats,
   onOpenSheetModal,
+  onUpdateUserName,
 }) => {
   // Find highest unlocked stage to resume
   const highestUnlocked = Math.max(...unlockedStages, 1);
@@ -77,24 +79,32 @@ export const StartScreen: React.FC<StartScreenProps> = ({
         </div>
 
         {/* Student Profile & Google Sheet Stats Bar */}
-        <div
-          onClick={() => {
-            soundManager.playTap();
-            onOpenSheetModal();
-          }}
-          className="bg-white/90 hover:bg-white border-2 border-amber-200 hover:border-amber-400 p-3 rounded-2xl shadow-xs transition-all cursor-pointer text-left space-y-1.5"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <span className="text-base">👤</span>
-              <span className="font-fun font-bold text-sm text-slate-800">
-                학습자: <span className="text-amber-700 underline decoration-amber-300 decoration-2">{userStats.name || '학생'}</span>
-              </span>
-              <span className="text-[10px] text-slate-400 font-medium">(이름 수정)</span>
+        <div className="bg-white/95 border-2 border-amber-200 p-3 rounded-2xl shadow-xs text-left space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+              <span className="text-base shrink-0">👤</span>
+              <label htmlFor="start-user-name-input" className="font-fun font-bold text-xs text-slate-700 shrink-0">
+                이름:
+              </label>
+              <input
+                id="start-user-name-input"
+                type="text"
+                value={userStats.name}
+                onChange={(e) => onUpdateUserName(e.target.value)}
+                placeholder="이름 입력 (예: 김민수)"
+                className="w-full min-w-0 bg-amber-50/70 border border-amber-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-900 focus:outline-hidden focus:border-amber-500 focus:bg-white"
+              />
             </div>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+            <button
+              type="button"
+              onClick={() => {
+                soundManager.playTap();
+                onOpenSheetModal();
+              }}
+              className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-[10px] font-bold transition-all active:scale-95"
+            >
               <span>📊 구글 시트 연동</span>
-            </span>
+            </button>
           </div>
 
           <div className="flex items-center justify-between text-xs text-slate-600 bg-amber-50/60 px-3 py-1.5 rounded-xl border border-amber-100">

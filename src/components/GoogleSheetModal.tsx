@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, ExternalLink, Copy, Check, Send, AlertCircle, Sparkles, User, RefreshCw, BarChart2, Fingerprint } from 'lucide-react';
 import {
   GOOGLE_SHEET_URL,
@@ -35,6 +35,13 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
   const [activeTab, setActiveTab] = useState<'status' | 'code'>('status');
 
+  useEffect(() => {
+    if (isOpen) {
+      setUserName(userStats.name);
+      setGasUrlInput(getGasUrl());
+    }
+  }, [isOpen, userStats.name]);
+
   if (!isOpen) return null;
 
   const lastTapData = loadLastSentenceTapStats();
@@ -43,10 +50,11 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
   // 구글 앱스 스크립트 소스 코드 (sentence_taps, average_taps 포함)
   const gasScriptCode = `/**
  * 영어 야호~! 구글 스프레드시트 기록 저장 앱스 스크립트
- * 시트 링크: https://docs.google.com/spreadsheets/d/1CA_BzGK7VkqJN2zfGuz0glO253l0pfbR_bRY6etNLYc/edit?usp=sharing
+ * 시트 링크: https://docs.google.com/spreadsheets/d/1l_iOSeiMh33TB6-sIF-FD9N5XEOk6V5yFkhjRCI0Nc8/edit?usp=sharing
  * 저장 열: timestamp, name, play_count, correct_count, wrong_count, sentence_taps, average_taps
  */
-const SPREADSHEET_ID = "1CA_BzGK7VkqJN2zfGuz0glO253l0pfbR_bRY6etNLYc";
+const SPREADSHEET_ID = "1l_iOSeiMh33TB6-sIF-FD9N5XEOk6V5yFkhjRCI0Nc8";
+const HEADERS = ["timestamp", "name", "play_count", "correct_count", "wrong_count", "sentence_taps", "average_taps"];
 
 function getTargetSheet() {
   let ss;
@@ -56,21 +64,21 @@ function getTargetSheet() {
     ss = SpreadsheetApp.getActiveSpreadsheet();
   }
   let sheet = ss.getSheets()[0];
-  const fullHeaders = ["timestamp", "name", "play_count", "correct_count", "wrong_count", "sentence_taps", "average_taps"];
-  
+
   if (sheet.getLastRow() === 0) {
-    sheet.appendRow(fullHeaders);
-    const range = sheet.getRange(1, 1, 1, fullHeaders.length);
+    sheet.appendRow(HEADERS);
+    const range = sheet.getRange(1, 1, 1, HEADERS.length);
     range.setFontWeight("bold");
     range.setBackground("#fef3c7");
     range.setHorizontalAlignment("center");
     sheet.setFrozenRows(1);
-  } else if (sheet.getLastColumn() < 7) {
-    const headerRange = sheet.getRange(1, 1, 1, fullHeaders.length);
-    headerRange.setValues([fullHeaders]);
-    headerRange.setFontWeight("bold");
-    headerRange.setBackground("#fef3c7");
-    headerRange.setHorizontalAlignment("center");
+  } else if (sheet.getLastColumn() < HEADERS.length) {
+    const range = sheet.getRange(1, 1, 1, HEADERS.length);
+    range.setValues([HEADERS]);
+    range.setFontWeight("bold");
+    range.setBackground("#fef3c7");
+    range.setHorizontalAlignment("center");
+    sheet.setFrozenRows(1);
   }
   return sheet;
 }
@@ -90,7 +98,7 @@ function doPost(e) {
 
     const timeZone = Session.getScriptTimeZone() || "Asia/Seoul";
     const timestamp = data.timestamp || Utilities.formatDate(new Date(), timeZone, "yyyy-MM-dd HH:mm:ss");
-    const name = data.name || "학생";
+    const name = data.name ? String(data.name).trim() : "학생";
     const play_count = Number(data.play_count) || 0;
     const correct_count = Number(data.correct_count) || 0;
     const wrong_count = Number(data.wrong_count) || 0;
@@ -101,7 +109,7 @@ function doPost(e) {
     sheet.appendRow([timestamp, name, play_count, correct_count, wrong_count, sentence_taps, average_taps]);
 
     const lastRow = sheet.getLastRow();
-    sheet.getRange(lastRow, 1, 1, 7).setHorizontalAlignment("center");
+    sheet.getRange(lastRow, 1, 1, HEADERS.length).setHorizontalAlignment("center");
 
     return ContentService.createTextOutput(JSON.stringify({
       status: "success",
@@ -116,14 +124,14 @@ function doPost(e) {
 }
 
 function doGet(e) {
-  if (e && e.parameter && (e.parameter.name || e.parameter.play_count)) {
+  if (e && e.parameter && (e.parameter.name || e.parameter.play_count || e.parameter.sentence_taps)) {
     return doPost(e);
   }
   return ContentService.createTextOutput(JSON.stringify({
     status: "ok",
     message: "영어 야호 구글 시트 로거 정상 작동 중입니다.",
     spreadsheetId: SPREADSHEET_ID,
-    columns: ["timestamp", "name", "play_count", "correct_count", "wrong_count", "sentence_taps", "average_taps"]
+    columns: HEADERS
   })).setMimeType(ContentService.MimeType.JSON);
 }`;
 
@@ -453,7 +461,7 @@ function doGet(e) {
                   </button>
                 </div>
                 <p className="text-[11px] text-amber-800 mb-2">
-                  이 코드는 구글 시트의 <b>timestamp, name, play_count, correct_count, wrong_count, sentence_taps, average_taps</b> 열에 문장 탭 데이터와 학습 결과를 저장합니다.
+                  이 코드는 구글 시트의 <b>timestamp, name, play_count, correct_count, wrong_count, sentence_taps, average_taps</b> 열에 문장별 탭 빈도·평균과 학습 통계를 저장합니다.
                 </p>
 
                 {/* Code Block Container */}

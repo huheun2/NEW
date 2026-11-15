@@ -4,20 +4,24 @@
  * 
  * 구글 스프레드시트 기록 연동 유틸리티
  * 
- * 구글 시트: https://docs.google.com/spreadsheets/d/1CA_BzGK7VkqJN2zfGuz0glO253l0pfbR_bRY6etNLYc/edit?usp=sharing
+ * 구글 시트: https://docs.google.com/spreadsheets/d/1l_iOSeiMh33TB6-sIF-FD9N5XEOk6V5yFkhjRCI0Nc8/edit?usp=sharing
  * .env.local 환경 변수: NEXT_PUBLIC_GOOGLE_SCRIPT_URL
  * 저장 열: timestamp, name, play_count, correct_count, wrong_count, sentence_taps, average_taps
  */
 
-export const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1CA_BzGK7VkqJN2zfGuz0glO253l0pfbR_bRY6etNLYc/edit?usp=sharing';
-export const SPREADSHEET_ID = '1CA_BzGK7VkqJN2zfGuz0glO253l0pfbR_bRY6etNLYc';
+export const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1l_iOSeiMh33TB6-sIF-FD9N5XEOk6V5yFkhjRCI0Nc8/edit?usp=sharing';
+export const SPREADSHEET_ID = '1l_iOSeiMh33TB6-sIF-FD9N5XEOk6V5yFkhjRCI0Nc8';
 
-// .env.local의 NEXT_PUBLIC_GOOGLE_SCRIPT_URL 기본값 로드
-export const DEFAULT_GAS_URL =
+// .env.local의 NEXT_PUBLIC_GOOGLE_SCRIPT_URL 값 로드
+export const ENV_GAS_URL =
   (typeof import.meta !== 'undefined' &&
     (import.meta as any).env &&
     (import.meta as any).env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL) ||
-  'https://script.google.com/macros/s/AKfycbyWgbHGZB7yLDqa4Rf6O_kzXHTsbfsD-wThPwhcTqmdDzOP9QqmHPpNTNbVyTltHlwSFw/exec';
+  '';
+
+export const DEFAULT_GAS_URL =
+  ENV_GAS_URL ||
+  'https://script.google.com/macros/s/AKfycbzGqkI1P3M2M8dwVIt8vnjaaz89js54-nu11Zqc2JRaJXkBbzafsKPgv7l68ZFDCSMteg/exec';
 
 export interface UserStats {
   name: string;
@@ -93,9 +97,12 @@ export function updateUserStats(updates: Partial<UserStats>): UserStats {
   return next;
 }
 
-// 배포된 구글 앱스 스크립트 웹 앱 URL 가져오기 (.env.local의 NEXT_PUBLIC_GOOGLE_SCRIPT_URL 기본값 우선)
+// 배포된 구글 앱스 스크립트 웹 앱 URL 가져오기 (.env.local의 NEXT_PUBLIC_GOOGLE_SCRIPT_URL 우선 사용)
 export function getGasUrl(): string {
   try {
+    if (ENV_GAS_URL && ENV_GAS_URL.trim()) {
+      return ENV_GAS_URL.trim();
+    }
     const stored = localStorage.getItem(STORAGE_KEYS.GAS_URL);
     if (stored && stored.trim()) {
       return stored.trim();

@@ -199,19 +199,20 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
             </a>
           </div>
 
-          <div className="text-[11px] text-slate-600 space-y-0.5">
-            <div className="flex items-center justify-between text-slate-700 font-medium">
-              <span>학생: <b>{userStats?.name || '학생'}</b></span>
+          <div className="text-[11px] text-slate-600 space-y-1">
+            <div className="flex items-center justify-between text-slate-700 font-medium flex-wrap gap-1">
+              <span>이름: <b>{userStats?.name || '학생'}</b></span>
               <span>플레이: <b>{userStats?.play_count || 0}회</b></span>
               <span>정답: <b className="text-emerald-600">{userStats?.correct_count || 0}</b></span>
+              <span>오답: <b className="text-rose-500">{userStats?.wrong_count || 0}</b></span>
             </div>
             {sheetLogStatus?.status === 'success' ? (
               <p className="text-emerald-700 font-bold bg-emerald-50 px-2 py-1.5 rounded-lg border border-emerald-200 leading-snug">
-                ✅ 구글 시트에 문장별 탭 빈도와 평균이 안전하게 저장되었습니다!
+                ✅ 구글 시트에 문장별 탭 빈도·평균(sentence_taps, average_taps)과 학습 통계가 안전하게 저장되었습니다!
               </p>
             ) : sheetLogStatus?.status === 'sending' ? (
               <p className="text-amber-700 font-medium bg-white/70 px-2 py-1 rounded-lg">
-                구글 시트로 문장 탭 빈도 및 학습 통계를 전송 중입니다...
+                구글 시트로 문장별 탭 빈도·평균 및 학습 기록을 전송 중입니다...
               </p>
             ) : sheetLogStatus?.status === 'error' ? (
               <div className="flex items-center justify-between bg-rose-50 p-2 rounded-lg border border-rose-200 text-rose-800 text-[11px]">

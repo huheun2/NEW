@@ -329,6 +329,10 @@ export default function App() {
             stageScores={stageScores}
             userStats={userStats}
             onOpenSheetModal={() => setIsSheetModalOpen(true)}
+            onUpdateUserName={(newName) => {
+              const updated = updateUserStats({ name: newName });
+              setUserStats(updated);
+            }}
             onStartGame={(stageId) => startStage(stageId || 1)}
             onOpenPrincipleForStage={(stageId) =>
               setPrincipleModal({
